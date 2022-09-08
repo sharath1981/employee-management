@@ -7,6 +7,8 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -39,6 +41,7 @@ import com.ryana.service.EmployeeService;
 
 /* This is not a pure unit test as it involves MockMVC
  * Prefer this test over unit testing of controller
+ * Only web context will be loaded
  * */
 @AutoConfigureJsonTesters
 @WebMvcTest(EmployeeController.class)
@@ -153,6 +156,7 @@ class EmployeeControllerSliceTest {
 		willDoNothing().given(employeeService).deleteById(anyLong());
 		mockMvc.perform(delete("/employees/50").contentType(MediaType.APPLICATION_JSON).content("{}")).andDo(print())
 				.andExpect(status().isNoContent());
+		verify(employeeService, times(1)).deleteById(anyLong());
 	}
 
 	@Test

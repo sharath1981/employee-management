@@ -7,6 +7,8 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -21,7 +23,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,8 +44,6 @@ import com.ryana.service.EmployeeService;
 
 /* This is not a pure unit test as it involves MockMVC
  * Using MockMVC Standalone Mode
- * However this test has some limitations as web context is not loaded for example @Valid input validation  test is not possible
- * Prefer other two controller tests
  * */
 @ExtendWith(MockitoExtension.class)
 class EmployeeControllerUnitTest {
@@ -67,9 +66,7 @@ class EmployeeControllerUnitTest {
 		final var objectMapper = new ObjectMapper();
 		objectMapper.findAndRegisterModules();
 		JacksonTester.initFields(this, objectMapper);
-		mockMvc = MockMvcBuilders
-				.standaloneSetup(employeeController)
-				.build();
+		mockMvc = MockMvcBuilders.standaloneSetup(employeeController).build();
 	}
 
 	@Test
@@ -84,8 +81,8 @@ class EmployeeControllerUnitTest {
 		given(employeeService.findAll()).willReturn(employees);
 		given(employeeMapper.toEmployeeDTOs(anyList())).willReturn(employeeDTOs);
 
-		final var response = mockMvc.perform(get("/employees").accept(MediaType.APPLICATION_JSON)).andReturn()
-				.getResponse();
+		final var response = mockMvc.perform(get("/employees").accept(MediaType.APPLICATION_JSON)).andDo(print())
+				.andReturn().getResponse();
 
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 		assertThat(response.getContentAsString()).isEqualTo(jsonEmployeeDTOs.write(employeeDTOs).getJson());
@@ -100,8 +97,8 @@ class EmployeeControllerUnitTest {
 		given(employeeService.findById(anyLong())).willReturn(Optional.of(kumar));
 		given(employeeMapper.toEmployeeDTO(any())).willReturn(employeeDTO);
 
-		final var response = mockMvc.perform(get("/employees/3").accept(MediaType.APPLICATION_JSON)).andReturn()
-				.getResponse();
+		final var response = mockMvc.perform(get("/employees/3").accept(MediaType.APPLICATION_JSON)).andDo(print())
+				.andReturn().getResponse();
 
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 		assertThat(response.getContentAsString()).isEqualTo(jsonEmployeeDTO.write(employeeDTO).getJson());
@@ -112,8 +109,8 @@ class EmployeeControllerUnitTest {
 	void shouldGetNotFoundStatusForInvalidId() throws Exception {
 		given(employeeService.findById(anyLong())).willReturn(Optional.empty());
 
-		final var response = mockMvc.perform(get("/employees/104").accept(MediaType.APPLICATION_JSON)).andReturn()
-				.getResponse();
+		final var response = mockMvc.perform(get("/employees/104").accept(MediaType.APPLICATION_JSON)).andDo(print())
+				.andReturn().getResponse();
 
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
 		assertThat(response.getContentAsString()).isBlank();
@@ -127,22 +124,23 @@ class EmployeeControllerUnitTest {
 		final var employeeDTO = EmployeeMapper.INSTANCE.toEmployeeDTO(kumar);
 		given(employeeService.save(any())).willReturn(kumar);
 		given(employeeMapper.toEmployeeDTO(any())).willReturn(employeeDTO);
-		final var response = mockMvc.perform(post("/employees").contentType(MediaType.APPLICATION_JSON)
-				.content(jsonEmployeeDTO.write(employeeDTO).getJson())).andReturn().getResponse();
+		final var response = mockMvc
+				.perform(post("/employees").contentType(MediaType.APPLICATION_JSON)
+						.content(jsonEmployeeDTO.write(employeeDTO).getJson()))
+				.andDo(print()).andReturn().getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.CREATED.value());
 		assertThat(response.getContentAsString()).isEqualTo(jsonEmployeeDTO.write(employeeDTO).getJson());
 	}
 
-	@Disabled//TODO:find a way to test
 	@Test
 	@DisplayName("Should not save an Employee when fields are missing")
 	void shouldNotSaveAnEmployee() throws Exception {
 		final var kumar = Employee.builder().gender(Gender.MALE).doj(LocalDate.of(2021, Month.DECEMBER, 15))
 				.salary(20000.00).build();
 		final var employeeDTO = EmployeeMapper.INSTANCE.toEmployeeDTO(kumar);
-		given(employeeService.save(any())).willReturn(kumar);
 		mockMvc.perform(post("/employees").contentType(MediaType.APPLICATION_JSON)
-				.content(jsonEmployeeDTO.write(employeeDTO).getJson())).andDo(print()).andExpect(status().isBadRequest());
+				.content(jsonEmployeeDTO.write(employeeDTO).getJson())).andDo(print())
+				.andExpect(status().isBadRequest());
 	}
 
 	@Test
@@ -153,8 +151,10 @@ class EmployeeControllerUnitTest {
 		final var employeeDTO = EmployeeMapper.INSTANCE.toEmployeeDTO(kumar);
 		given(employeeService.update(anyLong(), any())).willReturn(Optional.of(kumar));
 		given(employeeMapper.toEmployeeDTO(any())).willReturn(employeeDTO);
-		final var response = mockMvc.perform(put("/employees/2").contentType(MediaType.APPLICATION_JSON)
-				.content(jsonEmployeeDTO.write(employeeDTO).getJson())).andReturn().getResponse();
+		final var response = mockMvc
+				.perform(put("/employees/2").contentType(MediaType.APPLICATION_JSON)
+						.content(jsonEmployeeDTO.write(employeeDTO).getJson()))
+				.andDo(print()).andReturn().getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 		assertThat(response.getContentAsString()).isEqualTo(jsonEmployeeDTO.write(employeeDTO).getJson());
 	}
@@ -166,8 +166,10 @@ class EmployeeControllerUnitTest {
 				.doj(LocalDate.of(2021, Month.DECEMBER, 15)).salary(20000.00).build();
 		final var employeeDTO = EmployeeMapper.INSTANCE.toEmployeeDTO(kumar);
 		given(employeeService.update(anyLong(), any())).willReturn(Optional.empty());
-		final var response = mockMvc.perform(put("/employees/104").contentType(MediaType.APPLICATION_JSON)
-				.content(jsonEmployeeDTO.write(employeeDTO).getJson())).andReturn().getResponse();
+		final var response = mockMvc
+				.perform(put("/employees/104").contentType(MediaType.APPLICATION_JSON)
+						.content(jsonEmployeeDTO.write(employeeDTO).getJson()))
+				.andDo(print()).andReturn().getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
 		assertThat(response.getContentAsString()).isBlank();
 	}
@@ -176,8 +178,9 @@ class EmployeeControllerUnitTest {
 	@DisplayName("Should delete an Employee for valid Id")
 	void shouldDeleteAnEmployeeById() throws Exception {
 		willDoNothing().given(employeeService).deleteById(anyLong());
-		mockMvc.perform(delete("/employees/50").contentType(MediaType.APPLICATION_JSON).content("{}"))
+		mockMvc.perform(delete("/employees/50").contentType(MediaType.APPLICATION_JSON).content("{}")).andDo(print())
 				.andExpect(status().isNoContent());
+		verify(employeeService, times(1)).deleteById(anyLong());
 	}
 
 	@Test
@@ -185,7 +188,7 @@ class EmployeeControllerUnitTest {
 	void shouldGetAnAverageSalaryOfMaleEmployees() throws Exception {
 		given(employeeService.findAverageSalaryByGender(any())).willReturn(10000.0);
 		mockMvc.perform(get("/employees/averageSalary/" + Gender.MALE).contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isOk()).andExpect(content().string("10000.0"));
+				.andDo(print()).andExpect(status().isOk()).andExpect(content().string("10000.0"));
 
 	}
 
@@ -194,7 +197,7 @@ class EmployeeControllerUnitTest {
 	void shouldGetAnAverageSalaryOfFemaleEmployees() throws Exception {
 		given(employeeService.findAverageSalaryByGender(any())).willReturn(10000.0);
 		mockMvc.perform(get("/employees/averageSalary/" + Gender.FEMALE).contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isOk()).andExpect(content().string("10000.0"));
+				.andDo(print()).andExpect(status().isOk()).andExpect(content().string("10000.0"));
 	}
 
 	@Test
@@ -210,7 +213,7 @@ class EmployeeControllerUnitTest {
 		given(employeeMapper.toEmployeeDTOs(anyList())).willReturn(employeeDTOs);
 
 		mockMvc.perform(get("/employees/year/2020").accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
-				.andExpect(content().json(jsonEmployeeDTOs.write(employeeDTOs).getJson()));
+				.andDo(print()).andExpect(content().json(jsonEmployeeDTOs.write(employeeDTOs).getJson()));
 	}
 
 	@Test
@@ -218,8 +221,8 @@ class EmployeeControllerUnitTest {
 	void shouldGetEmptyListOfEmployeesByYear() throws Exception {
 		given(employeeService.findByYear(anyInt())).willReturn(List.of());
 		given(employeeMapper.toEmployeeDTOs(anyList())).willReturn(List.of());
-		final var response = mockMvc.perform(get("/employees/year/2010").accept(MediaType.APPLICATION_JSON)).andReturn()
-				.getResponse();
+		final var response = mockMvc.perform(get("/employees/year/2010").accept(MediaType.APPLICATION_JSON))
+				.andDo(print()).andReturn().getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 		assertThat(response.getContentAsString()).isEqualTo("[]");
 	}

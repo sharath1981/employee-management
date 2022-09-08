@@ -20,9 +20,8 @@ import com.ryana.domain.Employee;
 import com.ryana.domain.Gender;
 import com.ryana.dto.EmployeeDTO;
 
-/* This is also an Integration Testing
- * This is also an End to End testing with Test Container DB 
- * Whole spring context will be loaded*/
+/* This is also an Integration Testing and End to End testing with Test Container DB 
+ * Whole spring context will be loaded including web,service and repository layer*/
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class EmployeeControllerAcceptanceTest {
 
