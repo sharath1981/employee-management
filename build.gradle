@@ -27,7 +27,7 @@ dependencies {
     runtimeOnly 'org.postgresql:postgresql'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.testcontainers:junit-jupiter:1.17.3'
-    testImplementation 'org.testcontainers:postgresql:1.17.3'
+    testRuntimeOnly 'org.testcontainers:postgresql:1.17.3'
     annotationProcessor 'org.projectlombok:lombok:1.18.24'
     annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.2.Final'
