@@ -19,6 +19,7 @@ import org.springframework.http.RequestEntity;
 import com.ryana.domain.Employee;
 import com.ryana.domain.Gender;
 import com.ryana.dto.EmployeeDTO;
+import com.ryana.mapper.EmployeeMapper;
 
 /* This is also an Integration Testing and End to End testing with Test Container DB 
  * Whole spring context will be loaded including web,service and repository layer*/
@@ -58,7 +59,8 @@ class EmployeeControllerAcceptanceTest {
 	void shouldSaveAnEmployeeAndReturn() {
 		final var sharath = Employee.builder().name("sharath").gender(Gender.MALE)
 				.doj(LocalDate.of(2020, Month.JANUARY, 5)).salary(10000.00).build();
-		final var responseEntity = testRestTemplate.postForEntity(URI.create("/employees"), sharath, EmployeeDTO.class);
+		final var sharathDTO = EmployeeMapper.INSTANCE.toEmployeeDTO(sharath);
+		final var responseEntity = testRestTemplate.postForEntity(URI.create("/employees"), sharathDTO, EmployeeDTO.class);
 		assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 		assertThat(responseEntity.getBody()).extracting(EmployeeDTO::getId).isNotNull();
 		assertThat(responseEntity.getHeaders().get("Location"))
@@ -68,8 +70,7 @@ class EmployeeControllerAcceptanceTest {
 	@Test
 	@DisplayName("Should not save an Employee when fields are missing")
 	void shouldNotSaveAnEmployee() {
-		final var employee = new Employee();
-		final var responseEntity = testRestTemplate.postForEntity(URI.create("/employees"), employee,
+		final var responseEntity = testRestTemplate.postForEntity(URI.create("/employees"), new EmployeeDTO(),
 				EmployeeDTO.class);
 		assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
 		assertThat(responseEntity.getBody()).extracting(EmployeeDTO::getId).isNull();
@@ -80,7 +81,8 @@ class EmployeeControllerAcceptanceTest {
 	void shouldUpdateAnEmployeeAndReturnForValidId() {
 		final var sharath = Employee.builder().id(2l).name("sharath").gender(Gender.MALE)
 				.doj(LocalDate.of(2020, Month.JANUARY, 5)).salary(10000.00).build();
-		final var requestEntity = new RequestEntity<>(sharath, HttpMethod.PUT, URI.create("/employees/2"));
+		final var sharathDTO = EmployeeMapper.INSTANCE.toEmployeeDTO(sharath);
+		final var requestEntity = new RequestEntity<>(sharathDTO, HttpMethod.PUT, URI.create("/employees/2"));
 		final var responseEntity = testRestTemplate.exchange(requestEntity, EmployeeDTO.class);
 		assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
 		assertThat(responseEntity.getBody()).isNotNull();
@@ -92,7 +94,8 @@ class EmployeeControllerAcceptanceTest {
 	void updateShouldReturnANullForInvalidId() {
 		final var sharath = Employee.builder().id(112l).name("sharath").gender(Gender.MALE)
 				.doj(LocalDate.of(2020, Month.JANUARY, 5)).salary(10000.00).build();
-		final var requestEntity = new RequestEntity<>(sharath, HttpMethod.PUT, URI.create("/employees/112"));
+		final var sharathDTO = EmployeeMapper.INSTANCE.toEmployeeDTO(sharath);
+		final var requestEntity = new RequestEntity<>(sharathDTO, HttpMethod.PUT, URI.create("/employees/112"));
 		final var responseEntity = testRestTemplate.exchange(requestEntity, EmployeeDTO.class);
 		assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 		assertThat(responseEntity.getBody()).extracting(EmployeeDTO::getId).isNull();
