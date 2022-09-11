@@ -39,6 +39,7 @@ public class EmployeeController {
 	public ResponseEntity<List<EmployeeDTO>> findAll() {
 		final var employees = employeeService.findAll();
 		final var employeeDTOs = employeeMapper.toEmployeeDTOs(employees);
+		log.trace("findAll:employeeDTOs=>{}",employeeDTOs);
 		return ResponseEntity.ok().body(employeeDTOs);
 	}
 
