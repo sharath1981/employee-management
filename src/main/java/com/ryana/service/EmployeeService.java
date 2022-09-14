@@ -30,7 +30,10 @@ public class EmployeeService {
 	}
 
 	public Optional<Employee> update(Long id, Employee employee) {
-		return employeeRepository.findById(id).map(old -> old.update(employee)).map(employeeRepository::save);
+		return employeeRepository.findById(id).map(old -> {
+			employee.setId(id);
+			return employee;
+		}).map(employeeRepository::save);
 	}
 
 	public void deleteById(Long id) {

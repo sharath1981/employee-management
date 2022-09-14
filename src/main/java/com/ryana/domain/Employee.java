@@ -20,14 +20,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity
-@Table(name = "employee")
 @Validated
-@Setter
-@Getter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Setter
+@Getter
+@Entity
+@Table(name = "employee")
 public class Employee {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,9 +41,5 @@ public class Employee {
 	private LocalDate doj;
 	@NotNull
 	private Double salary;
-
-	public Employee update(final Employee employee) {
-		return new Employee(id, employee.name, employee.gender, employee.doj, employee.salary);
-	}
 
 }

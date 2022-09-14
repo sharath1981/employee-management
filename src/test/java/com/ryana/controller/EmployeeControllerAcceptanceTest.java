@@ -43,7 +43,7 @@ class EmployeeControllerAcceptanceTest {
 		final var responseEntity = testRestTemplate.getForEntity("/employees/3", EmployeeDTO.class);
 		assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
 		assertThat(responseEntity.getBody()).isNotNull();
-		assertThat(responseEntity.getBody()).extracting(EmployeeDTO::getId).isEqualTo(3l);
+		assertThat(responseEntity.getBody()).extracting(EmployeeDTO::id).isEqualTo(3l);
 	}
 
 	@Test
@@ -51,7 +51,7 @@ class EmployeeControllerAcceptanceTest {
 	void shouldGetNotFoundStatusForInvalidId() {
 		final var responseEntity = testRestTemplate.getForEntity("/employees/104", EmployeeDTO.class);
 		assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-		assertThat(responseEntity.getBody()).extracting(EmployeeDTO::getId).isNull();
+		assertThat(responseEntity.getBody()).extracting(EmployeeDTO::id).isNull();
 	}
 
 	@Test
@@ -60,11 +60,12 @@ class EmployeeControllerAcceptanceTest {
 		final var sharath = Employee.builder().name("sharath").gender(Gender.MALE)
 				.doj(LocalDate.of(2020, Month.JANUARY, 5)).salary(10000.00).build();
 		final var sharathDTO = EmployeeMapper.INSTANCE.toEmployeeDTO(sharath);
-		final var responseEntity = testRestTemplate.postForEntity(URI.create("/employees"), sharathDTO, EmployeeDTO.class);
+		final var responseEntity = testRestTemplate.postForEntity(URI.create("/employees"), sharathDTO,
+				EmployeeDTO.class);
 		assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-		assertThat(responseEntity.getBody()).extracting(EmployeeDTO::getId).isNotNull();
+		assertThat(responseEntity.getBody()).extracting(EmployeeDTO::id).isNotNull();
 		assertThat(responseEntity.getHeaders().get("Location"))
-				.anyMatch(location -> location.endsWith("/employees/" + responseEntity.getBody().getId()));
+				.anyMatch(location -> location.endsWith("/employees/" + responseEntity.getBody().id()));
 	}
 
 	@Test
@@ -73,7 +74,7 @@ class EmployeeControllerAcceptanceTest {
 		final var responseEntity = testRestTemplate.postForEntity(URI.create("/employees"), new EmployeeDTO(),
 				EmployeeDTO.class);
 		assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-		assertThat(responseEntity.getBody()).extracting(EmployeeDTO::getId).isNull();
+		assertThat(responseEntity.getBody()).extracting(EmployeeDTO::id).isNull();
 	}
 
 	@Test
@@ -86,7 +87,8 @@ class EmployeeControllerAcceptanceTest {
 		final var responseEntity = testRestTemplate.exchange(requestEntity, EmployeeDTO.class);
 		assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
 		assertThat(responseEntity.getBody()).isNotNull();
-		assertThat(responseEntity.getBody()).extracting(EmployeeDTO::getId).isEqualTo(2l);
+		assertThat(responseEntity.getBody()).extracting(EmployeeDTO::id).isEqualTo(2l);
+		assertThat(responseEntity.getBody()).isEqualTo(sharathDTO);
 	}
 
 	@Test
@@ -98,7 +100,7 @@ class EmployeeControllerAcceptanceTest {
 		final var requestEntity = new RequestEntity<>(sharathDTO, HttpMethod.PUT, URI.create("/employees/112"));
 		final var responseEntity = testRestTemplate.exchange(requestEntity, EmployeeDTO.class);
 		assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-		assertThat(responseEntity.getBody()).extracting(EmployeeDTO::getId).isNull();
+		assertThat(responseEntity.getBody()).extracting(EmployeeDTO::id).isNull();
 	}
 
 	@Test
@@ -109,7 +111,7 @@ class EmployeeControllerAcceptanceTest {
 		assertThat(deleteResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 		final var responseEntity = testRestTemplate.getForEntity("/employees/50", EmployeeDTO.class);
 		assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-		assertThat(responseEntity.getBody()).extracting(EmployeeDTO::getId).isNull();
+		assertThat(responseEntity.getBody()).extracting(EmployeeDTO::id).isNull();
 	}
 
 	@Order(1)

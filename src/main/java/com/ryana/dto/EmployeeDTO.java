@@ -10,19 +10,28 @@ import org.springframework.validation.annotation.Validated;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.ryana.domain.Gender;
 
-import lombok.Data;
-
-@Data
+// @Data
+// @Validated
+// public class EmployeeDTO {
+// 	Long id;
+// 	@NotBlank
+// 	String name;
+// 	@NotNull
+// 	Gender gender;
+// 	@JsonFormat(pattern="yyyy-MM-dd")
+// 	@NotNull
+// 	LocalDate doj;
+// 	@NotNull
+// 	Double salary;
+// }
 @Validated
-public class EmployeeDTO {
-	Long id;
-	@NotBlank
-	String name;
-	@NotNull
-	Gender gender;
-	@JsonFormat(pattern="yyyy-MM-dd")
-	@NotNull
-	LocalDate doj;
-	@NotNull
-	Double salary;
+public record EmployeeDTO(
+		Long id,
+		@NotBlank String name,
+		@NotNull Gender gender,
+		@JsonFormat(pattern = "yyyy-MM-dd") @NotNull LocalDate doj,
+		@NotNull Double salary) {
+	public EmployeeDTO() {
+		this(null, null, null, null, null);
+	}
 }
