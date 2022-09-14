@@ -3,6 +3,7 @@ package com.ryana.service;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import com.ryana.domain.Employee;
@@ -30,9 +31,11 @@ public class EmployeeService {
 	}
 
 	public Optional<Employee> update(Long id, Employee employee) {
+
 		return employeeRepository.findById(id).map(old -> {
-			employee.setId(id);
-			return employee;
+			BeanUtils.copyProperties(employee, old, Employee.class);
+			old.setId(id);
+			return old;
 		}).map(employeeRepository::save);
 	}
 
